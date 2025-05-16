@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Skin Type Detector</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ffe3ec, #d0e8f2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      transition: 0.3s ease;
+    }
+    h2 {
+      color: #ff5e8e;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      color: #444;
+      font-weight: 500;
+      text-align: left;
+    }
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      margin-top: 5px;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      background-color: #ff5e8e;
+      border: none;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #e14f79;
+    }
+    #result {
+      margin-top: 25px;
+      font-weight: 500;
+      color: #333;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    #result.show {
+      opacity: 1;
+    }
+    .emoji {
+      font-size: 1.2em;
+    }
+    @media (max-width: 500px) {
+      .container { padding: 20px; }
+      h2 { font-size: 20px; }
+      button { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>✨ Know Your Skin Type ✨</h2>
+
+    <form id="skinForm">
+      <label>How does your skin feel at the end of the day?
+        <select name="feeling">
+          <option value="oily">🌟 Oily</option>
+          <option value="dry">🌵 Dry</option>
+          <option value="normal">🌸 Normal</option>
+          <option value="combination">🌈 Combination</option>
+        </select>
+      </label>
+
+      <label>Do you have dry or flaky patches?
+        <select name="dryPatches">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </label>
+
+      <label>Do you often get pimples?
+        <select name="pimples">
+          <option value="frequently">Frequently</option>
+          <option value="rarely">Rarely</option>
+          <option value="never">Never</option>
+        </select>
+      </label>
+
+      <label>Main skin concern:
+        <select name="concern">
+          <option value="acne">💥 Acne</option>
+          <option value="dullness">😐 Dullness</option>
+          <option value="wrinkles">🧓 Wrinkles</option>
+          <option value="hydration">💧 Hydration</option>
+        </select>
+      </label>
+
+      <button type="submit">💖 Get My Recommendations</button>
+    </form>
+
+    <div id="result"></div>
+  </div>
+
+  <!-- Firebase App (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBcpA9Pp1xsLzVV_9UfhkirMjBFDKmMqd4",
+      authDomain: "my-skin-analyzer.firebaseapp.com",
+      projectId: "my-skin-analyzer",
+      storageBucket: "my-skin-analyzer.appspot.com",
+      messagingSenderId: "564181320095",
+      appId: "1:564181320095:web:9c982ef4cb2ad26aeb7daa",
+      measurementId: "G-EFYK5VEYV3"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Form handling
+    const form = document.getElementById('skinForm');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const data = new FormData(form);
+      const values = Object.fromEntries(data.entries());
+
+      let skinType = "normal";
+
+      if (values.feeling === "oily" && values.pimples === "frequently") {
+        skinType = "oily";
+      } else if (values.feeling === "dry" || values.dryPatches === "yes") {
+        skinType = "dry";
+      } else if (values.feeling === "combination") {
+        skinType = "combination";
+      }
+
+      let recommendation = "";
+      switch (skinType) {
+        case "oily":
+          recommendation = "Use gel-based cleansers and oil-free moisturizers. Try Niacinamide serum!";
+          break;
+        case "dry":
+          recommendation = "Use hydrating creams and gentle cleansers. Look for products with Hyaluronic Acid!";
+          break;
+        case "combination":
+          recommendation = "Balance your routine. Use a gentle cleanser and hydrate dry areas.";
+          break;
+        case "normal":
+          recommendation = "Maintain a simple routine with gentle, balanced products.";
+          break;
+      }
+
+      resultDiv.innerHTML = `
+        <p>Your Skin Type: <strong>${skinType.toUpperCase()}</strong> 💫</p>
+        <p><strong>Tip:</strong> ${recommendation}</p>
+      `;
+
+      resultDiv.classList.remove('show');
+      void resultDiv.offsetWidth;
+      resultDiv.classList.add('show');
+
+
+      //add 
+      
+      //add end 
+      // Save to Firestore
+      db.collection("skinSubmissions").add({
+        skinType: skinType,
+        recommendation: recommendation,
+        feeling: values.feeling,
+        dryPatches: values.dryPatches,
+        pimples: values.pimples,
+        concern: values.concern,
+        timestamp: new Date()
+      })
+      .then(() => {
+        console.log("Data saved to Firestore ✅");
+      })
+      .catch((error) => {
+        console.error("Error saving data to Firestore ❌", error);
+      });
+    });
+  </script>
+</body>
+</html>
